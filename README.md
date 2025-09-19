@@ -100,9 +100,27 @@ John,john@example.com,true
 Jane,jane.com,false
 
 
+## File Cleanup Scheduler
+This application includes a scheduled task that automatically deletes old files from the upload directory to prevent disk clutter.
+## Configuration
+- Directory: Files are stored in uploaded-files/
+- Retention: Files older than 7 days are deleted
+- Schedule: Runs daily at 2 AM (configured via cron expression)
+@Scheduled(cron = "0 0 2 * * ?") // Daily at 2 AM
 
-## Cleanup
-Processed files are stored in uploaded-files/. You can delete them manually or add a cleanup script if needed.
+
+## Location
+The scheduler is implemented in FileCleanupScheduler.java
+## Behavior
+- Skips cleanup if the upload directory does not exist
+- Logs each deleted file and any errors encountered
+- Uses java.nio.file and Stream API for efficient file handling
+
+## Customization
+To change the retention period or schedule:
+- Modify the isOlderThanDays(file, 7) logic
+- Update the @Scheduled cron expression
+
 
 ## Developer Notes
 - Follow clean commit practices (feat, fix, test, docs)

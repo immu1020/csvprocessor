@@ -14,6 +14,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
 
+/**
+ * REST controller for handling file upload and download operations.
+ * <p>
+ * Provides endpoints to upload CSV files and retrieve processed files by ID.
+ */
 @RestController
 @RequestMapping("/API")
 public class FileController {
@@ -21,6 +26,13 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
+    /**
+     * Uploads a CSV file and returns a unique file ID.
+     *
+     * @param file the uploaded CSV file
+     * @return ResponseEntity containing the file ID on success,
+     *         or an error message on failure
+     */
     @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
         try {
@@ -34,6 +46,13 @@ public class FileController {
         }
     }
 
+    /**
+     * Downloads a processed CSV file by its unique ID.
+     *
+     * @param id the unique identifier of the file
+     * @return ResponseEntity containing the file bytes and headers on success,
+     *         or an error message on failure
+     */
     @GetMapping("/download/{id}")
     public ResponseEntity<?> download(@PathVariable String id) {
         try {

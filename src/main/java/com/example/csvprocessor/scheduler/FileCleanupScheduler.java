@@ -15,6 +15,12 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
+/**
+ * Scheduled component responsible for cleaning up old files from the upload directory.
+ * <p>
+ * This scheduler runs daily at 2 AM and deletes files older than 7 days from the configured
+ * {@code uploaded-files} directory. It logs all deletions and handles errors gracefully.
+ */
 @Component
 public class FileCleanupScheduler {
 
@@ -23,6 +29,12 @@ public class FileCleanupScheduler {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    /**
+     * Scheduled task that runs daily at 2 AM to delete files older than 7 days.
+     * <p>
+     * Skips cleanup if the upload directory does not exist. Logs each deleted file
+     * and any errors encountered during deletion or directory access.
+     */
     @Scheduled(cron = "0 0 2 * * ?") // Daily at 2 AM
     public void cleanOldFiles() {
         Path path = Paths.get(uploadDir);
@@ -47,6 +59,13 @@ public class FileCleanupScheduler {
         }
     }
 
+    /**
+     * Checks whether a file is older than the specified number of days.
+     *
+     * @param file the file path to check
+     * @param days the age threshold in days
+     * @return {@code true} if the file is older than the threshold; {@code false} otherwise
+     */
     private boolean isOlderThanDays(Path file, int days) {
         try {
             FileTime lastModified = Files.getLastModifiedTime(file);
