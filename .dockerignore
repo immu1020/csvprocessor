@@ -1,0 +1,23 @@
+# Maven build artifacts
+target/
+*.jar
+*.war
+
+# IDE files
+*.iml
+.idea/
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Environment files
+.env
