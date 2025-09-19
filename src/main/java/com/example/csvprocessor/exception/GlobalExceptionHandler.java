@@ -7,6 +7,8 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.util.Map;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -32,6 +34,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<String>> handleFileTooLarge(MaxUploadSizeExceededException ex) {
         return new ResponseEntity<>(new ApiResponse<>("File size exceeds limit", 413, null), HttpStatus.PAYLOAD_TOO_LARGE);
     }
+
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<?> handleInvalidFile(InvalidFileException ex) {
+        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ProcessingInProgressException.class)
+    public ResponseEntity<?> handleProcessing(ProcessingInProgressException ex) {
+        return ResponseEntity.status(HttpStatus.LOCKED).body(Map.of("error", ex.getMessage()));
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<String>> handleAll(Exception ex) {
