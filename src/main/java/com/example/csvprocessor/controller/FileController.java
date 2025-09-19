@@ -2,6 +2,7 @@ package com.example.csvprocessor.controller;
 
 import com.example.csvprocessor.dto.ApiResponse;
 import com.example.csvprocessor.dto.UploadResponseDto;
+import com.example.csvprocessor.exception.ResourceNotFoundException;
 import com.example.csvprocessor.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/API")
@@ -20,20 +22,21 @@ public class FileController {
     private FileService fileService;
 
     @PostMapping("/upload")
-    public ResponseEntity<ApiResponse<UploadResponseDto>> upload(@RequestParam("file") MultipartFile file) {
-        UploadResponseDto response = fileService.processFile(file);
-        return new ResponseEntity<>(
-                new ApiResponse<>("File uploaded successfully", 200, response),
-                HttpStatus.OK
-        );
+    public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
+        try {
+            UploadResponseDto response = fileService.processFile(file);
+            return ResponseEntity.ok(new ApiResponse<>("File uploaded successfully", 200, response));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unexpected error occurred"));
+        }
     }
 
-
     @GetMapping("/download/{id}")
-    public ResponseEntity<byte[]> download(@PathVariable String id) {
-        FileSystemResource fileResource = fileService.getFileById(id);
-
+    public ResponseEntity<?> download(@PathVariable String id) {
         try {
+            FileSystemResource fileResource = fileService.getFileById(id);
             byte[] fileBytes = Files.readAllBytes(fileResource.getFile().toPath());
 
             HttpHeaders headers = new HttpHeaders();
@@ -42,8 +45,12 @@ public class FileController {
             headers.setContentDisposition(ContentDisposition.attachment().filename("processed.csv").build());
 
             return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.LOCKED).body(Map.of("error", e.getMessage()));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "File read error"));
         }
     }
 }

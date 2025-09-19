@@ -1,6 +1,8 @@
 package com.example.csvprocessor.service.impl;
 
 import com.example.csvprocessor.dto.UploadResponseDto;
+import com.example.csvprocessor.exception.InvalidFileException;
+import com.example.csvprocessor.exception.ProcessingInProgressException;
 import com.example.csvprocessor.exception.ResourceNotFoundException;
 import com.example.csvprocessor.model.FileStatus;
 import com.example.csvprocessor.service.FileService;
@@ -34,8 +36,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public UploadResponseDto processFile(MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException("Uploaded file is empty");
+        if (file.isEmpty() || !Objects.requireNonNull(file.getOriginalFilename()).endsWith(".csv")) {
+            throw new InvalidFileException("Uploaded file is empty or not a CSV");
         }
 
         String id = UUID.randomUUID().toString();
@@ -68,16 +70,17 @@ public class FileServiceImpl implements FileService {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))
         ) {
             String header = reader.readLine();
-            if (header != null) {
-                writer.write(header + ",flag");
-                writer.newLine();
+            if (header == null || header.trim().isEmpty()) {
+                throw new InvalidFileException("CSV file missing header");
             }
+            writer.write(header + ",flag");
+            writer.newLine();
 
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
-                boolean hasEmail = Arrays.stream(line.split(","))
-                        .anyMatch(EmailValidator::isValidEmail);
+                String[] fields = line.split(",");
+                boolean hasEmail = Arrays.stream(fields).anyMatch(EmailValidator::isValidEmail);
                 writer.write(line + "," + hasEmail);
                 writer.newLine();
             }
@@ -90,9 +93,8 @@ public class FileServiceImpl implements FileService {
         if (status == null) {
             throw new ResourceNotFoundException("Invalid file ID");
         }
-
         if (!"completed".equals(status.getStatus())) {
-            throw new IllegalStateException("File processing not completed yet");
+            throw new ProcessingInProgressException("File processing not completed yet");
         }
 
         File file = new File(status.getPath());
