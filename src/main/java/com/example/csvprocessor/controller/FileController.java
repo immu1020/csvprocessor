@@ -25,11 +25,12 @@ public class FileController {
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
         try {
             UploadResponseDto response = fileService.processFile(file);
-            return ResponseEntity.ok(new ApiResponse<>("File uploaded successfully", 200, response));
+            return ResponseEntity.ok(Map.of("id", response.getId()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unexpected error occurred"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Unexpected error occurred"));
         }
     }
 
