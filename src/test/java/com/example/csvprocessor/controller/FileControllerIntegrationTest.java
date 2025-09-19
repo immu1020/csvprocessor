@@ -31,7 +31,7 @@ public class FileControllerIntegrationTest {
 
         mockMvc.perform(multipart("/API/upload").file(file))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value("abc-123"));
+                .andExpect(jsonPath("$.id").value("abc-123"));
     }
 
     @Test

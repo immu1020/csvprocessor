@@ -1,5 +1,6 @@
 package com.example.csvprocessor.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,10 +23,17 @@ public class ApiResponse<T> {
     /**
      * HTTP status code associated with the response.
      */
+    @JsonProperty("status")
     private int status;
 
     /**
      * The actual response payload of type T.
      */
     private T data;
+
+    @JsonProperty("code")
+    public int getCode() {
+        return status;
+    }
+
 }

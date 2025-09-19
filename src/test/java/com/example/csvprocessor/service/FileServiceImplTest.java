@@ -1,6 +1,7 @@
 package com.example.csvprocessor.service;
 
 import com.example.csvprocessor.dto.UploadResponseDto;
+import com.example.csvprocessor.exception.InvalidFileException;
 import com.example.csvprocessor.service.impl.FileServiceImpl;
 import org.junit.jupiter.api.*;
 import org.springframework.mock.web.MockMultipartFile;
@@ -32,11 +33,11 @@ class FileServiceImplTest {
     void shouldThrowExceptionForEmptyFile() {
         MockMultipartFile file = new MockMultipartFile("file", "empty.csv", "text/csv", new byte[0]);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(InvalidFileException.class, () -> {
             fileService.processFile(file);
         });
 
-        assertEquals("Uploaded file is empty", exception.getMessage());
+        assertEquals("Uploaded file is empty or not a CSV", exception.getMessage());
     }
 
     @AfterEach
